@@ -1,0 +1,187 @@
+sgeorge@Ss-MacBook-Air pactbackend % npm run check:endpoints
+
+> pact-backend@1.0.0 check:endpoints
+> ts-node src/scripts/checkEndpoints.ts
+
+Discovered endpoints:
+METHOD PATH                                     AUTH  ROLES
+------ ---------------------------------------- ----- ------------------------------
+POST   /api/v1/auth/change-password             yes   -
+POST   /api/v1/auth/login                       no    -
+GET    /api/v1/auth/me                          yes   -
+POST   /api/v1/auth/refresh                     no    -
+POST   /api/v1/auth/register                    no    -
+POST   /api/v1/auth/reset-password/confirm      no    -
+POST   /api/v1/auth/reset-password/request      no    -
+GET    /api/v1/notifications/                   yes   -
+PATCH  /api/v1/notifications/:id/read           yes   -
+POST   /api/v1/notifications/mark-all-read      yes   -
+GET    /api/v1/notifications/unread-count       yes   -
+GET    /api/v1/profiles/                        yes   admin,super_admin,manager
+GET    /api/v1/profiles/:id                     yes   -
+PATCH  /api/v1/profiles/:id                     yes   admin,super_admin
+GET    /api/v1/profiles/me                      yes   -
+PATCH  /api/v1/profiles/me                      yes   -
+POST   /api/v1/profiles/me/fcm-token            yes   -
+GET    /api/v1/projects/                        yes   -
+POST   /api/v1/projects/                        yes   admin,super_admin,manager
+GET    /api/v1/projects/:id                     yes   -
+PATCH  /api/v1/projects/:id                     yes   admin,super_admin,manager
+DELETE /api/v1/storage/:id                      yes   -
+GET    /api/v1/storage/signed-url               yes   -
+POST   /api/v1/storage/upload                   yes   -
+GET    /api/v1/wallet/                          yes   admin,super_admin,finance
+GET    /api/v1/wallet/me                        yes   -
+GET    /api/v1/wallet/me/transactions           yes   -
+POST   /api/v1/wallet/me/withdrawal             yes   -
+
+Summary:
+  total endpoints: 28
+  public endpoints: 5
+  auth-protected endpoints: 23
+  role-protected endpoints: 5
+
+Public endpoints:
+  POST   /api/v1/auth/login
+  POST   /api/v1/auth/refresh
+  POST   /api/v1/auth/register
+  POST   /api/v1/auth/reset-password/confirm
+  POST   /api/v1/auth/reset-password/request
+sgeorge@Ss-MacBook-Air pactbackend % npm run db:create      
+
+> pact-backend@1.0.0 db:create
+> ts-node src/scripts/createTables.ts
+
+error: role "pact_user" does not exist
+    at /Users/sgeorge/Desktop/PACT CONSULTANCY/dashboard_backend/pactbackend/node_modules/pg-pool/index.js:45:11
+    at processTicksAndRejections (node:internal/process/task_queues:95:5)
+    at async query (/Users/sgeorge/Desktop/PACT CONSULTANCY/dashboard_backend/pactbackend/src/config/database.ts:38:15)
+    at async main (/Users/sgeorge/Desktop/PACT CONSULTANCY/dashboard_backend/pactbackend/src/scripts/createTables.ts:8:3) {
+  length: 101,
+  severity: 'FATAL',
+  code: '28000',
+  detail: undefined,
+  hint: undefined,
+  position: undefined,
+  internalPosition: undefined,
+  internalQuery: undefined,
+  where: undefined,
+  schema: undefined,
+  table: undefined,
+  column: undefined,
+  dataType: undefined,
+  constraint: undefined,
+  file: 'miscinit.c',
+  line: '755',
+  routine: 'InitializeSessionUserId'
+}
+sgeorge@Ss-MacBook-Air pactbackend % npm run check:endpoints
+
+> pact-backend@1.0.0 check:endpoints
+> ts-node src/scripts/checkEndpoints.ts
+
+Discovered endpoints:
+METHOD PATH                                     AUTH  ROLES
+------ ---------------------------------------- ----- ------------------------------
+POST   /api/v1/auth/change-password             yes   -
+POST   /api/v1/auth/login                       no    -
+POST   /api/v1/auth/logout                      yes   -
+GET    /api/v1/auth/me                          yes   -
+POST   /api/v1/auth/refresh                     no    -
+POST   /api/v1/auth/register                    no    -
+POST   /api/v1/auth/reset-password/confirm      no    -
+POST   /api/v1/auth/reset-password/request      no    -
+GET    /api/v1/notifications/                   yes   -
+POST   /api/v1/notifications/                   yes   -
+PATCH  /api/v1/notifications/:id/read           yes   -
+POST   /api/v1/notifications/mark-all-read      yes   -
+GET    /api/v1/notifications/unread-count       yes   -
+GET    /api/v1/profiles/                        yes   admin,super_admin,manager
+GET    /api/v1/profiles/:id                     yes   -
+PATCH  /api/v1/profiles/:id                     yes   admin,super_admin
+GET    /api/v1/profiles/me                      yes   -
+PATCH  /api/v1/profiles/me                      yes   -
+POST   /api/v1/profiles/me/fcm-token            yes   -
+GET    /api/v1/projects/                        yes   -
+POST   /api/v1/projects/                        yes   admin,super_admin,manager
+DELETE /api/v1/projects/:id                     yes   admin,super_admin,manager
+GET    /api/v1/projects/:id                     yes   -
+PATCH  /api/v1/projects/:id                     yes   admin,super_admin,manager
+POST   /api/v1/projects/:id/members             yes   admin,super_admin,manager
+GET    /api/v1/storage/                         yes   -
+DELETE /api/v1/storage/:id                      yes   -
+GET    /api/v1/storage/:id                      yes   -
+POST   /api/v1/storage/upload                   yes   -
+GET    /api/v1/wallet/                          yes   admin,super_admin,finance
+GET    /api/v1/wallet/me                        yes   -
+POST   /api/v1/wallet/me/topup                  yes   -
+GET    /api/v1/wallet/me/transactions           yes   -
+POST   /api/v1/wallet/me/withdrawal             yes   -
+
+Summary:
+  total endpoints: 34
+  public endpoints: 5
+  auth-protected endpoints: 29
+  role-protected endpoints: 7
+
+Public endpoints:
+  POST   /api/v1/auth/login
+  POST   /api/v1/auth/refresh
+  POST   /api/v1/auth/register
+  POST   /api/v1/auth/reset-password/confirm
+  POST   /api/v1/auth/reset-password/request
+sgeorge@Ss-MacBook-Air pactbackend % npm run check:endpoints
+
+> pact-backend@1.0.0 check:endpoints
+> ts-node src/scripts/checkEndpoints.ts
+
+Discovered endpoints:
+METHOD PATH                                     AUTH  ROLES
+------ ---------------------------------------- ----- ------------------------------
+POST   /api/v1/auth/change-password             yes   -
+POST   /api/v1/auth/login                       no    -
+POST   /api/v1/auth/logout                      yes   -
+GET    /api/v1/auth/me                          yes   -
+POST   /api/v1/auth/refresh                     no    -
+POST   /api/v1/auth/register                    no    -
+POST   /api/v1/auth/reset-password/confirm      no    -
+POST   /api/v1/auth/reset-password/request      no    -
+GET    /api/v1/notifications/                   yes   -
+POST   /api/v1/notifications/                   yes   -
+PATCH  /api/v1/notifications/:id/read           yes   -
+POST   /api/v1/notifications/mark-all-read      yes   -
+GET    /api/v1/notifications/unread-count       yes   -
+GET    /api/v1/profiles/                        yes   admin,super_admin,manager
+GET    /api/v1/profiles/:id                     yes   -
+PATCH  /api/v1/profiles/:id                     yes   admin,super_admin
+GET    /api/v1/profiles/me                      yes   -
+PATCH  /api/v1/profiles/me                      yes   -
+POST   /api/v1/profiles/me/fcm-token            yes   -
+GET    /api/v1/projects/                        yes   -
+POST   /api/v1/projects/                        yes   admin,super_admin,manager
+DELETE /api/v1/projects/:id                     yes   admin,super_admin,manager
+GET    /api/v1/projects/:id                     yes   -
+PATCH  /api/v1/projects/:id                     yes   admin,super_admin,manager
+POST   /api/v1/projects/:id/members             yes   admin,super_admin,manager
+GET    /api/v1/storage/                         yes   -
+DELETE /api/v1/storage/:id                      yes   -
+GET    /api/v1/storage/:id                      yes   -
+POST   /api/v1/storage/upload                   yes   -
+GET    /api/v1/wallet/                          yes   admin,super_admin,finance
+GET    /api/v1/wallet/me                        yes   -
+POST   /api/v1/wallet/me/topup                  yes   -
+GET    /api/v1/wallet/me/transactions           yes   -
+POST   /api/v1/wallet/me/withdrawal             yes   -
+
+Summary:
+  total endpoints: 34
+  public endpoints: 5
+  auth-protected endpoints: 29
+  role-protected endpoints: 7
+
+Public endpoints:
+  POST   /api/v1/auth/login
+  POST   /api/v1/auth/refresh
+  POST   /api/v1/auth/register
+  POST   /api/v1/auth/reset-password/confirm
+  POST   /api/v1/auth/reset-password/request

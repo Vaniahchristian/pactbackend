@@ -15,5 +15,6 @@ router.post('/reset-password/confirm', authLimiter, controller.resetPassword);
 // Authenticated
 router.get('/me', requireAuth, controller.me);
 router.post('/change-password', requireAuth, controller.changePassword);
+router.post('/logout', requireAuth, controller.logout);
 
 export default router;

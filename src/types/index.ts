@@ -46,29 +46,50 @@ export interface Profile {
 /** Wallet row */
 export interface Wallet {
   id: string;
-  user_id: string;
+  profile_id: string;
   currency: string;
-  balance_cents: number;
-  total_earned_cents: number;
-  total_paid_out_cents: number;
-  pending_payout_cents: number;
+  balance: number;
+  status: string;
+  metadata: Record<string, unknown> | null;
   created_at: string;
   updated_at: string;
+}
+
+export interface WalletTransaction {
+  id: string;
+  wallet_account_id: string;
+  type: string;
+  amount: number;
+  currency: string;
+  status: string;
+  description: string | null;
+  metadata: Record<string, unknown> | null;
+  created_at: string;
+}
+
+export interface WalletTopup {
+  id: string;
+  wallet_account_id: string;
+  amount: number;
+  currency: string;
+  source: string | null;
+  status: string;
+  metadata: Record<string, unknown> | null;
+  created_at: string;
 }
 
 /** Notification row */
 export interface Notification {
   id: string;
-  event_type: string;
-  entity_type: string;
-  entity_id: string;
-  priority: string;
-  status: string;
-  recipient_id: string;
-  recipient_email: string | null;
-  created_at: string;
-  read_at: string | null;
+  profile_id: string;
+  type: string;
+  title: string;
+  body: string | null;
+  payload: Record<string, unknown> | null;
+  is_read: boolean;
+  channel: string;
   metadata: Record<string, unknown> | null;
+  created_at: string;
 }
 
 /** Project row */
@@ -81,6 +102,26 @@ export interface Project {
   status: string;
   start_date: string | null;
   end_date: string | null;
+}
+
+export interface ProjectMember {
+  project_id: string;
+  profile_id: string;
+  role: string;
+  joined_at: string;
+}
+
+export interface StorageObject {
+  id: string;
+  bucket_id: string;
+  key: string;
+  name: string | null;
+  mime_type: string | null;
+  size: number;
+  url: string | null;
+  metadata: Record<string, unknown> | null;
+  uploaded_by: string | null;
+  created_at: string;
 }
 
 /** Pagination query params */

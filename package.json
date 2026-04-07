@@ -9,7 +9,9 @@
     "start": "node dist/server.js",
     "migrate": "ts-node src/db/migrate.ts",
     "migrate:down": "ts-node src/db/migrate.ts down",
-    "lint": "eslint src/**/*.ts"
+    "lint": "eslint src/**/*.ts",
+    "db:create": "ts-node src/scripts/createTables.ts",
+    "check:endpoints": "ts-node src/scripts/checkEndpoints.ts"
   },
   "dependencies": {
     "bcryptjs": "^2.4.3",
@@ -26,7 +28,7 @@
     "morgan": "^1.10.0",
     "multer": "^1.4.5-lts.1",
     "node-cron": "^3.0.3",
-    "nodemailer": "^6.9.16",
+    "nodemailer": "^8.0.4",
     "pg": "^8.13.3",
     "socket.io": "^4.8.1",
     "uuid": "^11.1.0",

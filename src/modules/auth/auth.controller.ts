@@ -113,6 +113,20 @@ export async function changePassword(req: AuthRequest, res: Response, next: Next
   }
 }
 
+export async function logout(req: AuthRequest, res: Response, next: NextFunction) {
+  try {
+    const { refreshToken } = req.body;
+    if (!refreshToken) {
+      sendError(res, 'refreshToken is required', 400);
+      return;
+    }
+    await authService.revokeRefreshToken(refreshToken, req.user!.id);
+    sendSuccess(res, null, 'Logged out successfully');
+  } catch (err) {
+    next(err);
+  }
+}
+
 export async function me(req: AuthRequest, res: Response, next: NextFunction) {
   try {
     sendSuccess(res, req.user);

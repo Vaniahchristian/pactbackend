@@ -1,5 +1,5 @@
 import { Router, Response, NextFunction } from 'express';
-import { query, paginate } from '../../config/database';
+import { query, paginate, transaction } from '../../config/database';
 import { requireAuth, requireRole } from '../../middleware/auth';
 import { sendSuccess, sendPaginated, sendError } from '../../utils/response';
 import { AuthRequest, parsePagination, Project } from '../../types';
@@ -52,6 +52,49 @@ router.post('/', requireRole('admin', 'super_admin', 'manager'), async (req: Aut
       [uuidv4(), name, project_code, description ?? null, project_type ?? null, status ?? 'active', start_date ?? null, end_date ?? null]
     );
     sendSuccess(res, project, 'Project created', 201);
+  } catch (err) {
+    next(err);
+  }
+});
+
+router.delete('/:id', requireRole('admin', 'super_admin', 'manager'), async (req: AuthRequest, res: Response, next: NextFunction) => {
+  try {
+    const project = await transaction(async (client) => {
+      await client.query('DELETE FROM project_members WHERE project_id = $1', [req.params.id]);
+      const result = await client.query(
+        'DELETE FROM projects WHERE id = $1 RETURNING *',
+        [req.params.id]
+      );
+      return result.rows[0] as Project | undefined;
+    });
+
+    if (!project) throw new AppError('Project not found', 404);
+    sendSuccess(res, project, 'Project deleted successfully');
+  } catch (err) {
+    next(err);
+  }
+});
+
+router.post('/:id/members', requireRole('admin', 'super_admin', 'manager'), async (req: AuthRequest, res: Response, next: NextFunction) => {
+  try {
+    const { profile_id, role } = req.body;
+    if (!profile_id) {
+      sendError(res, 'profile_id is required', 400);
+      return;
+    }
+
+    const [project] = await query<Project>('SELECT * FROM projects WHERE id = $1', [req.params.id]);
+    if (!project) throw new AppError('Project not found', 404);
+
+    const [member] = await query(
+      `INSERT INTO project_members (project_id, profile_id, role, joined_at)
+       VALUES ($1, $2, $3, NOW())
+       ON CONFLICT (project_id, profile_id) DO UPDATE SET role = EXCLUDED.role
+       RETURNING *`,
+      [req.params.id, profile_id, role ?? 'member']
+    );
+
+    sendSuccess(res, member, 'Project member added', 201);
   } catch (err) {
     next(err);
   }

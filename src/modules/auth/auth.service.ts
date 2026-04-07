@@ -1,12 +1,52 @@
 import bcrypt from 'bcryptjs';
+import jwt from 'jsonwebtoken';
 import { v4 as uuidv4 } from 'uuid';
 import { query, transaction } from '../../config/database';
 import { generateTokens, verifyRefreshToken } from '../../middleware/auth';
+import { env } from '../../config/env';
 import { AppError } from '../../middleware/errorHandler';
 import { Profile } from '../../types';
 import { logger } from '../../utils/logger';
 
 const SALT_ROUNDS = 12;
+
+interface RefreshTokenRow {
+  id: string;
+  profile_id: string;
+  token: string;
+  revoked: boolean;
+  expires_at: string;
+}
+
+async function saveRefreshToken(
+  profileId: string,
+  token: string,
+  expiresAt: string
+): Promise<void> {
+  await query(
+    `INSERT INTO refresh_tokens (id, profile_id, token, revoked, created_at, expires_at)
+     VALUES ($1, $2, $3, false, NOW(), $4)`,
+    [uuidv4(), profileId, token, expiresAt]
+  );
+}
+
+async function validateRefreshTokenEntry(token: string): Promise<RefreshTokenRow> {
+  const [row] = await query<RefreshTokenRow>(
+    `SELECT * FROM refresh_tokens WHERE token = $1 AND revoked = false AND expires_at > NOW()`,
+    [token]
+  );
+  if (!row) {
+    throw new AppError('Invalid or revoked refresh token', 401);
+  }
+  return row;
+}
+
+export async function revokeRefreshToken(token: string, profileId: string): Promise<void> {
+  await query(
+    `UPDATE refresh_tokens SET revoked = true WHERE token = $1 AND profile_id = $2`,
+    [token, profileId]
+  );
+}
 
 export interface RegisterInput {
   email: string;
@@ -47,10 +87,10 @@ export async function register(input: RegisterInput) {
     [id, email.toLowerCase(), full_name, phone ?? null, role, hub_id ?? null, passwordHash]
   );
 
-  // Create wallet for new user
+  // Create wallet account for new user
   await query(
-    `INSERT INTO wallets (id, user_id, currency, balance_cents, total_earned_cents, total_paid_out_cents, pending_payout_cents, created_at, updated_at)
-     VALUES ($1, $2, 'USD', 0, 0, 0, 0, NOW(), NOW())`,
+    `INSERT INTO wallet_accounts (id, profile_id, currency, balance, status, metadata, created_at, updated_at)
+     VALUES ($1, $2, 'USD', 0, 'active', '{}'::jsonb, NOW(), NOW())`,
     [uuidv4(), id]
   );
 
@@ -62,6 +102,10 @@ export async function register(input: RegisterInput) {
     role: profile.role!,
     hub_id: profile.hub_id ?? undefined,
   });
+
+  const decoded = jwt.decode(tokens.refreshToken) as { exp?: number } | null;
+  const expiresAt = decoded?.exp ? new Date(decoded.exp * 1000).toISOString() : new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString();
+  await saveRefreshToken(profile.id, tokens.refreshToken, expiresAt);
 
   return { profile, ...tokens };
 }
@@ -103,6 +147,10 @@ export async function login(input: LoginInput) {
     state_id: user.state_id ?? undefined,
   });
 
+  const decoded = jwt.decode(tokens.refreshToken) as { exp?: number } | null;
+  const expiresAt = decoded?.exp ? new Date(decoded.exp * 1000).toISOString() : new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString();
+  await saveRefreshToken(user.id, tokens.refreshToken, expiresAt);
+
   const { password_hash: _, ...profile } = user;
   return { profile, ...tokens };
 }
@@ -118,6 +166,8 @@ export async function refreshSession(refreshToken: string) {
   if (payload.type !== 'refresh') {
     throw new AppError('Invalid token type', 401);
   }
+
+  await validateRefreshTokenEntry(refreshToken);
 
   const [user] = await query<Pick<Profile, 'id' | 'email' | 'role' | 'hub_id' | 'state_id' | 'status'>>(
     'SELECT id, email, role, hub_id, state_id, status FROM profiles WHERE id = $1',
@@ -208,7 +258,7 @@ export async function changePassword(userId: string, currentPassword: string, ne
 
   const passwordHash = await bcrypt.hash(newPassword, SALT_ROUNDS);
   await query(
-    'UPDATE profiles SET password_hash = $1, updated_at = NOW() WHERE id = $1',
+    'UPDATE profiles SET password_hash = $1, updated_at = NOW() WHERE id = $2',
     [passwordHash, userId]
   );
 }

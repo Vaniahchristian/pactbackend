@@ -6,12 +6,13 @@ export async function getNotifications(
   userId: string,
   params: PaginationParams & { status?: string }
 ) {
-  const conditions = ['recipient_id = $1'];
+  const conditions: string[] = ['profile_id = $1'];
   const values: unknown[] = [userId];
 
-  if (params.status) {
-    values.push(params.status);
-    conditions.push(`status = $${values.length}`);
+  if (params.status === 'unread') {
+    conditions.push('is_read = false');
+  } else if (params.status === 'read') {
+    conditions.push('is_read = true');
   }
 
   const sql = `SELECT * FROM notifications WHERE ${conditions.join(' AND ')} ORDER BY created_at DESC`;
@@ -20,49 +21,49 @@ export async function getNotifications(
 
 export async function markAsRead(userId: string, notificationId: string): Promise<void> {
   await query(
-    `UPDATE notifications SET status = 'read', read_at = NOW()
-     WHERE id = $1 AND recipient_id = $2`,
+    `UPDATE notifications SET is_read = true
+     WHERE id = $1 AND profile_id = $2`,
     [notificationId, userId]
   );
 }
 
 export async function markAllAsRead(userId: string): Promise<void> {
   await query(
-    `UPDATE notifications SET status = 'read', read_at = NOW()
-     WHERE recipient_id = $1 AND status != 'read'`,
+    `UPDATE notifications SET is_read = true
+     WHERE profile_id = $1 AND is_read = false`,
     [userId]
   );
 }
 
 export async function getUnreadCount(userId: string): Promise<number> {
   const [row] = await query<{ count: string }>(
-    `SELECT COUNT(*) as count FROM notifications WHERE recipient_id = $1 AND status = 'unread'`,
+    `SELECT COUNT(*) as count FROM notifications WHERE profile_id = $1 AND is_read = false`,
     [userId]
   );
   return parseInt(row.count, 10);
 }
 
 export async function createNotification(data: {
-  event_type: string;
-  entity_type: string;
-  entity_id: string;
-  recipient_id: string;
-  recipient_email?: string;
-  priority?: string;
+  profile_id: string;
+  type: string;
+  title: string;
+  body?: string;
+  payload?: Record<string, unknown>;
+  channel?: string;
   metadata?: Record<string, unknown>;
 }): Promise<Notification> {
   const [notification] = await query<Notification>(
-    `INSERT INTO notifications (id, event_type, entity_type, entity_id, priority, status, recipient_id, recipient_email, metadata, created_at)
-     VALUES ($1, $2, $3, $4, $5, 'unread', $6, $7, $8, NOW())
+    `INSERT INTO notifications (id, profile_id, type, title, body, payload, is_read, channel, metadata, created_at)
+     VALUES ($1, $2, $3, $4, $5, $6, false, $7, $8, NOW())
      RETURNING *`,
     [
       uuidv4(),
-      data.event_type,
-      data.entity_type,
-      data.entity_id,
-      data.priority ?? 'normal',
-      data.recipient_id,
-      data.recipient_email ?? null,
+      data.profile_id,
+      data.type,
+      data.title,
+      data.body ?? null,
+      data.payload ? JSON.stringify(data.payload) : null,
+      data.channel ?? 'in-app',
       data.metadata ? JSON.stringify(data.metadata) : null,
     ]
   );

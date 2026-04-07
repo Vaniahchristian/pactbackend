@@ -1,7 +1,7 @@
 import { Router, Response, NextFunction } from 'express';
 import * as service from './notifications.service';
 import { requireAuth } from '../../middleware/auth';
-import { sendSuccess, sendPaginated } from '../../utils/response';
+import { sendSuccess, sendPaginated, sendError } from '../../utils/response';
 import { AuthRequest, parsePagination } from '../../types';
 
 const router = Router();
@@ -35,6 +35,28 @@ router.post('/mark-all-read', async (req: AuthRequest, res: Response, next: Next
   try {
     await service.markAllAsRead(req.user!.id);
     sendSuccess(res, null, 'All notifications marked as read');
+  } catch (err) {
+    next(err);
+  }
+});
+
+router.post('/', async (req: AuthRequest, res: Response, next: NextFunction) => {
+  try {
+    const { profile_id, type, title, body, payload } = req.body;
+    if (!profile_id || !type || !title) {
+      sendError(res, 'profile_id, type, and title are required', 400);
+      return;
+    }
+
+    const notification = await service.createNotification({
+      profile_id,
+      type,
+      title,
+      body,
+      payload,
+    });
+
+    sendSuccess(res, notification, 'Notification created', 201);
   } catch (err) {
     next(err);
   }
