@@ -12,6 +12,19 @@ CREATE TABLE IF NOT EXISTS announcements (
   updated_at timestamptz DEFAULT now()
 );
 
+CREATE TABLE IF NOT EXISTS employees (
+  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+  profile_id uuid REFERENCES profiles(id) ON DELETE SET NULL,
+  employee_number text UNIQUE,
+  position text,
+  department text,
+  status text,
+  hired_date date,
+  manager_id uuid REFERENCES employees(id) ON DELETE SET NULL,
+  created_at timestamptz DEFAULT now(),
+  updated_at timestamptz DEFAULT now()
+);
+
 CREATE TABLE IF NOT EXISTS attendance_records (
   id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
   employee_id uuid REFERENCES employees(id) ON DELETE CASCADE,
@@ -115,6 +128,20 @@ CREATE TABLE IF NOT EXISTS inventory_items (
   updated_at timestamptz DEFAULT now()
 );
 
+CREATE TABLE IF NOT EXISTS mmp_site_entries (
+  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+  project_id uuid REFERENCES projects(id) ON DELETE SET NULL,
+  user_id uuid REFERENCES profiles(id) ON DELETE SET NULL,
+  start_time timestamptz,
+  end_time timestamptz,
+  site_data jsonb,
+  location jsonb,
+  status text,
+  notes text,
+  created_at timestamptz DEFAULT now(),
+  updated_at timestamptz DEFAULT now()
+);
+
 CREATE TABLE IF NOT EXISTS location_logs (
   id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
   site_visit_id uuid REFERENCES mmp_site_entries(id),
@@ -170,20 +197,6 @@ CREATE TABLE IF NOT EXISTS mmp_files (
   modification_history jsonb,
   modified_at timestamptz,
   activities jsonb,
-  created_at timestamptz DEFAULT now(),
-  updated_at timestamptz DEFAULT now()
-);
-
-CREATE TABLE IF NOT EXISTS mmp_site_entries (
-  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
-  project_id uuid REFERENCES projects(id) ON DELETE SET NULL,
-  user_id uuid REFERENCES profiles(id) ON DELETE SET NULL,
-  start_time timestamptz,
-  end_time timestamptz,
-  site_data jsonb,
-  location jsonb,
-  status text,
-  notes text,
   created_at timestamptz DEFAULT now(),
   updated_at timestamptz DEFAULT now()
 );

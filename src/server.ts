@@ -47,7 +47,11 @@ app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 app.use(globalLimiter);
 
-// ── Health check ─────────────────────────────────────────────────────────────
+// ── Root and health checks ───────────────────────────────────────────────────
+app.get('/', (_req, res) => {
+  res.json({ status: 'ok', message: 'PACT Backend is running', version: '1.0.0' });
+});
+
 app.get('/health', (_req, res) => {
   res.json({ status: 'ok', timestamp: new Date().toISOString(), version: '1.0.0' });
 });

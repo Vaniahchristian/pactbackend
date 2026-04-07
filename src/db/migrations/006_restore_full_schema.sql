@@ -579,6 +579,46 @@ CREATE TABLE IF NOT EXISTS user_settings (
   last_updated timestamptz DEFAULT now()
 );
 
+CREATE TABLE IF NOT EXISTS authentications (
+  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+  profile_id uuid NOT NULL REFERENCES profiles(id) ON DELETE CASCADE,
+  email text NOT NULL UNIQUE,
+  password_hash text,
+  provider text NOT NULL DEFAULT 'email',
+  provider_id text,
+  created_at timestamptz NOT NULL DEFAULT now(),
+  updated_at timestamptz NOT NULL DEFAULT now()
+);
+
+CREATE TABLE IF NOT EXISTS wallets (
+  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+  profile_id uuid NOT NULL REFERENCES profiles(id) ON DELETE CASCADE,
+  currency text NOT NULL DEFAULT 'USD',
+  balance numeric(14,2) NOT NULL DEFAULT 0,
+  status text NOT NULL DEFAULT 'active',
+  metadata jsonb DEFAULT '{}'::jsonb,
+  created_at timestamptz NOT NULL DEFAULT now(),
+  updated_at timestamptz NOT NULL DEFAULT now()
+);
+CREATE UNIQUE INDEX IF NOT EXISTS wallets_profile_id_uniq ON wallets(profile_id);
+
+CREATE TABLE IF NOT EXISTS equipment (
+  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+  name text NOT NULL,
+  serial_number text,
+  status text,
+  metadata jsonb DEFAULT '{}'::jsonb,
+  created_at timestamptz NOT NULL DEFAULT now()
+);
+
+CREATE TABLE IF NOT EXISTS hubs (
+  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+  name text NOT NULL,
+  location jsonb,
+  metadata jsonb DEFAULT '{}'::jsonb,
+  created_at timestamptz NOT NULL DEFAULT now()
+);
+
 
 -- Indexes for restored tables
 

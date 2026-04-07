@@ -83,9 +83,18 @@ CREATE TABLE IF NOT EXISTS notifications (
 CREATE INDEX IF NOT EXISTS notifications_profile_id_idx ON notifications(profile_id);
 CREATE INDEX IF NOT EXISTS notifications_is_read_idx ON notifications(is_read);
 
+CREATE TABLE IF NOT EXISTS chats (
+  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+  name text,
+  type text,
+  created_by uuid REFERENCES profiles(id) ON DELETE SET NULL,
+  metadata jsonb DEFAULT '{}'::jsonb,
+  created_at timestamptz NOT NULL DEFAULT now()
+);
+
 CREATE TABLE IF NOT EXISTS chat_messages (
   id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
-  chat_id uuid,
+  chat_id uuid REFERENCES chats(id) ON DELETE CASCADE,
   sender_id uuid REFERENCES profiles(id) ON DELETE SET NULL,
   receiver_id uuid REFERENCES profiles(id) ON DELETE SET NULL,
   project_id uuid REFERENCES projects(id) ON DELETE SET NULL,
